@@ -113,7 +113,7 @@
               "exemplar": true,
               "expr": "sum(rate(ehconsumer_events_received_total{app=\"eventhub-consumer\"}[1m]))",
               "interval": "",
-              "legendFormat": "{{partitionId}}",
+              "legendFormat": "value",
               "refId": "A"
             }
           ],
@@ -203,7 +203,7 @@
               "exemplar": true,
               "expr": "sum(ehconsumer_lag{app=\"eventhub-consumer\"})",
               "interval": "",
-              "legendFormat": "{{partitionId}}",
+              "legendFormat": "value",
               "refId": "A"
             }
           ],
@@ -306,9 +306,9 @@
           "targets": [
             {
               "exemplar": true,
-              "expr": "sum(rate(ehconsumer_events_received_total{app=\"eventhub-consumer\"}[1m])) by (partitionId)",
+              "expr": "sum(rate(ehconsumer_events_received_total{app=\"eventhub-consumer\"}[1m])) by (partition_id)",
               "interval": "",
-              "legendFormat": "{{partitionId}}",
+              "legendFormat": "{{partition_id}}",
               "refId": "A"
             }
           ],
@@ -396,9 +396,9 @@
           "targets": [
             {
               "exemplar": true,
-              "expr": "sum(ehconsumer_lag{app=\"eventhub-consumer\"}) by (partitionId)",
+              "expr": "sum(ehconsumer_lag{app=\"eventhub-consumer\"}) by (partition_id)",
               "interval": "",
-              "legendFormat": "{{partitionId}}",
+              "legendFormat": "{{partition_id}}",
               "refId": "A"
             }
           ],
@@ -486,9 +486,9 @@
           "targets": [
             {
               "exemplar": true,
-              "expr": "sum(rate(ehconsumer_partition_initialization_total{app=\"eventhub-consumer\"}[1m])) by (partitionId)",
+              "expr": "sum(rate(ehconsumer_partition_initialization_total{app=\"eventhub-consumer\"}[1m])) by (partition_id)",
               "interval": "",
-              "legendFormat": "{{partitionId}}",
+              "legendFormat": "{{partition_id}}",
               "refId": "A"
             }
           ],
@@ -542,7 +542,7 @@
               "expr": "ehconsumer_event_timestamp{app=\"eventhub-consumer\"}",
               "instant": true,
               "interval": "",
-              "legendFormat": "{{partitionId}}",
+              "legendFormat": "{{partition_id}}",
               "refId": "A"
             }
           ],
@@ -560,7 +560,8 @@
                 },
                 "indexByName": {},
                 "renameByName": {
-                  "Metric": "PartitionId",
+                  "Metric": "Partition Id",
+                  "Time": "Metric Reported",
                   "Value": "Approx Last Processed Message Time"
                 }
               }
