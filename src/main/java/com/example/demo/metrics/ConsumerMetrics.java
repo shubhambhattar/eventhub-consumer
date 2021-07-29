@@ -32,7 +32,7 @@ public class ConsumerMetrics {
         meterRegistry
                 .counter(
                         "ehconsumer_events_received",
-                        Tags.of("partitionId", partitionId)
+                        Tags.of("partition_id", partitionId)
                 ).increment();
     }
 
@@ -41,7 +41,7 @@ public class ConsumerMetrics {
         meterRegistry
                 .counter(
                         "ehconsumer_partition_initialization",
-                        Tags.of("partitionId", partitionId)
+                        Tags.of("partition_id", partitionId)
                 ).increment();
     }
 
@@ -50,7 +50,7 @@ public class ConsumerMetrics {
         meterRegistry
                 .counter(
                         "ehconsumer_process_errors",
-                        Tags.of("partitionId", partitionId)
+                        Tags.of("partition_id", partitionId)
                 ).increment();
     }
 
@@ -59,7 +59,7 @@ public class ConsumerMetrics {
         meterRegistry
                 .counter(
                         "ehconsumer_partition_close",
-                        Tags.of("partitionId", partitionId)
+                        Tags.of("partition_id", partitionId)
                 ).increment();
     }
 
@@ -72,7 +72,7 @@ public class ConsumerMetrics {
                     partitionId,
                     meterRegistry.gauge(
                             "ehconsumer_lag",
-                            Tags.of("partitionId", partitionId),
+                            Tags.of("partition_id", partitionId),
                             new AtomicLong(lag)
                     )
             );
@@ -88,7 +88,7 @@ public class ConsumerMetrics {
                     partitionId,
                     meterRegistry.gauge(
                             "ehconsumer_event_timestamp",
-                            Tags.of("partitionId", partitionId),
+                            Tags.of("partition_id", partitionId),
                             new AtomicLong(timestamp)
                     )
             );

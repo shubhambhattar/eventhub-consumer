@@ -503,8 +503,9 @@
                 "mode": "thresholds"
               },
               "custom": {
-                "align": "auto",
-                "displayMode": "auto"
+                "align": "left",
+                "displayMode": "auto",
+                "filterable": false
               },
               "mappings": [],
               "thresholds": {
@@ -538,7 +539,7 @@
           "targets": [
             {
               "exemplar": true,
-              "expr": "sum(rate(ehconsumer_partition_initialization_total{app=\"eventhub-consumer\"}[1m])) by (partitionId)",
+              "expr": "ehconsumer_event_timestamp{app=\"eventhub-consumer\"}",
               "instant": true,
               "interval": "",
               "legendFormat": "{{partitionId}}",
@@ -546,6 +547,25 @@
             }
           ],
           "title": "Approx last message processed time / partition",
+          "transformations": [
+            {
+              "id": "seriesToRows",
+              "options": {}
+            },
+            {
+              "id": "organize",
+              "options": {
+                "excludeByName": {
+                  "Time": false
+                },
+                "indexByName": {},
+                "renameByName": {
+                  "Metric": "PartitionId",
+                  "Value": "Approx Last Processed Message Time"
+                }
+              }
+            }
+          ],
           "type": "table"
         }
       ],
@@ -555,10 +575,6 @@
     {
       "collapsed": true,
       "datasource": null,
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -1382,10 +1398,6 @@
     {
       "collapsed": true,
       "datasource": null,
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -1500,10 +1512,6 @@
     {
       "collapsed": true,
       "datasource": null,
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -2412,10 +2420,6 @@
     {
       "collapsed": true,
       "datasource": null,
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -2827,10 +2831,6 @@
     {
       "collapsed": true,
       "datasource": null,
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -3044,10 +3044,6 @@
     {
       "collapsed": true,
       "datasource": null,
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -3261,10 +3257,6 @@
     {
       "collapsed": true,
       "datasource": null,
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -3490,6 +3482,5 @@
   "timepicker": {},
   "timezone": "",
   "title": "EventHub Consumer",
-  "uid": "eventhub-consumer",
-  "version": 1
+  "uid": "eventhub-consumer"
 }
