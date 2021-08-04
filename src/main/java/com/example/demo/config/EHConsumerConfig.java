@@ -10,7 +10,7 @@ import com.example.demo.impl.ProcessError;
 import com.example.demo.impl.ProcessEvent;
 import com.example.demo.impl.ProcessPartitionInitialization;
 import com.example.demo.metrics.ConsumerMetrics;
-import com.example.demo.service.LastEventProcessedTrackingService;
+import com.example.demo.service.OldestEnqueuedEventProcessedTrackingService;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -23,28 +23,6 @@ import java.util.Map;
 @Slf4j
 @Configuration
 public class EHConsumerConfig {
-
-    @Bean
-    public PartitionClose getPartitionClose(final ConsumerMetrics consumerMetrics, 
-                                            final LastEventProcessedTrackingService lastEventProcessedTrackingService) {
-        return new PartitionClose(consumerMetrics, lastEventProcessedTrackingService);
-    }
-
-    @Bean
-    public ProcessError getProcessError(final ConsumerMetrics consumerMetrics) {
-        return new ProcessError(consumerMetrics);
-    }
-
-    @Bean
-    public ProcessEvent getProcessEvent(final ConsumerMetrics consumerMetrics,
-                                        final LastEventProcessedTrackingService lastEventProcessedTrackingService) {
-        return new ProcessEvent(consumerMetrics, lastEventProcessedTrackingService);
-    }
-
-    @Bean
-    public ProcessPartitionInitialization getPartitionInitialization(final ConsumerMetrics consumerMetrics) {
-        return new ProcessPartitionInitialization(consumerMetrics);
-    }
 
     @Bean
     public Map<String, EventPosition> getInitialPartitionEventPosition(final ConsumerConfig consumerConfig) {

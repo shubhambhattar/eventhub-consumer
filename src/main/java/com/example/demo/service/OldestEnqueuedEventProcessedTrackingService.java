@@ -1,6 +1,8 @@
 package com.example.demo.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.actuate.health.Health;
+import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -11,7 +13,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 @Slf4j
 @Service
-public class LastEventProcessedTrackingService {
+public class OldestEnqueuedEventProcessedTrackingService implements HealthIndicator {
 
     private final Map<String, AtomicLong> lastEventProcessedTimestampPerPartition = new ConcurrentHashMap<>();
 
@@ -33,7 +35,7 @@ public class LastEventProcessedTrackingService {
         lastEventProcessedTimestampPerPartition.remove(partitionId);
     }
 
-    public long getOldestEventProcessedInAnyPartitionTimestamp() {
+    private long getOldestEnqueuedEventProcessedInAnyPartitionTimestamp() {
 
         long oldestTimestampEncountered = Instant.now().toEpochMilli();
         for (String partitionId: lastEventProcessedTimestampPerPartition.keySet()) {
@@ -43,5 +45,17 @@ public class LastEventProcessedTrackingService {
             }
         }
         return oldestTimestampEncountered;
+    }
+
+    @Override
+    public Health health() {
+        final long currentTimestamp = Instant.now().toEpochMilli();
+
+        if (currentTimestamp - getOldestEnqueuedEventProcessedInAnyPartitionTimestamp() > 300_000) {
+            return Health.down()
+                    .withDetail("Events not consumed one partition since last 5 mins", "")
+                    .build();
+        }
+        return Health.up().build();
     }
 }
