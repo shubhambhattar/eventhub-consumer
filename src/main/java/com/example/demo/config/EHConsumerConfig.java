@@ -10,6 +10,8 @@ import com.example.demo.impl.ProcessError;
 import com.example.demo.impl.ProcessEvent;
 import com.example.demo.impl.ProcessPartitionInitialization;
 import com.example.demo.metrics.ConsumerMetrics;
+import com.example.demo.service.LastEventProcessedTrackingService;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,8 +25,9 @@ import java.util.Map;
 public class EHConsumerConfig {
 
     @Bean
-    public PartitionClose getPartitionClose(final ConsumerMetrics consumerMetrics) {
-        return new PartitionClose(consumerMetrics);
+    public PartitionClose getPartitionClose(final ConsumerMetrics consumerMetrics, 
+                                            final LastEventProcessedTrackingService lastEventProcessedTrackingService) {
+        return new PartitionClose(consumerMetrics, lastEventProcessedTrackingService);
     }
 
     @Bean
@@ -33,8 +36,9 @@ public class EHConsumerConfig {
     }
 
     @Bean
-    public ProcessEvent getProcessEvent(final ConsumerMetrics consumerMetrics) {
-        return new ProcessEvent(consumerMetrics);
+    public ProcessEvent getProcessEvent(final ConsumerMetrics consumerMetrics,
+                                        final LastEventProcessedTrackingService lastEventProcessedTrackingService) {
+        return new ProcessEvent(consumerMetrics, lastEventProcessedTrackingService);
     }
 
     @Bean
