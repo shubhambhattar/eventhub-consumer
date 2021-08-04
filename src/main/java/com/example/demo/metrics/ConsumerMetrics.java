@@ -3,7 +3,6 @@ package com.example.demo.metrics;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
 import lombok.AllArgsConstructor;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.Map;
@@ -17,11 +16,6 @@ public class ConsumerMetrics {
     private final MeterRegistry meterRegistry;
     private final Map<String, AtomicLong> lags = new ConcurrentHashMap<>();
     private final Map<String, AtomicLong> eventTimestamp = new ConcurrentHashMap<>();
-
-    @Bean
-    public ConsumerMetrics getConsumerMetrics(final MeterRegistry meterRegistry) {
-        return new ConsumerMetrics(meterRegistry);
-    }
 
     public void countEvents(final String partitionId) {
 

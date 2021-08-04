@@ -2,7 +2,7 @@ package com.example.demo.impl;
 
 import com.azure.messaging.eventhubs.models.EventContext;
 import com.example.demo.metrics.ConsumerMetrics;
-import com.example.demo.service.LastEventProcessedTrackingService;
+import com.example.demo.service.OldestEnqueuedEventProcessedTrackingService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -15,7 +15,7 @@ import java.util.function.Consumer;
 public class ProcessEvent implements Consumer<EventContext> {
 
     private final ConsumerMetrics consumerMetrics;
-    private final LastEventProcessedTrackingService lastEventProcessedTrackingService;
+    private final OldestEnqueuedEventProcessedTrackingService oldestEnqueuedEventProcessedTrackingService;
 
     @Override
     public void accept(EventContext eventContext) {
@@ -26,7 +26,7 @@ public class ProcessEvent implements Consumer<EventContext> {
 
         consumerMetrics.countEvents(partitionId);
         consumerMetrics.updateLag(partitionId, lag);
-        lastEventProcessedTrackingService
+        oldestEnqueuedEventProcessedTrackingService
                 .update(partitionId, eventContext.getEventData().getEnqueuedTime().toEpochMilli());
         consumerMetrics.updateEventTimestamp(partitionId, eventContext.getEventData().getEnqueuedTime().toEpochMilli());
     }
