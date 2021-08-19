@@ -10,7 +10,6 @@ import com.example.demo.impl.ProcessError;
 import com.example.demo.impl.ProcessEvent;
 import com.example.demo.impl.ProcessPartitionInitialization;
 import com.example.demo.metrics.ConsumerMetrics;
-import com.example.demo.service.OldestEnqueuedEventProcessedTrackingService;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;

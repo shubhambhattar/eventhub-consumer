@@ -16,8 +16,8 @@ public class ConsumerConfig {
     private final String connectionString;
     private final String consumerGroup;
     private final String initialPartitionEventPosition;
-
     private final int noOfPartitions;
-
     private final boolean trackLastEnqueuedEventProperties;
+    private final String fullyQualifiedNamespace;
+    private final String eventHubName;
 }
