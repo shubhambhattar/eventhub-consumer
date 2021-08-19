@@ -2,7 +2,8 @@ package com.example.demo.metrics;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
-import lombok.AllArgsConstructor;
+import io.micrometer.core.instrument.Timer;
+import lombok.Getter;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.Map;
@@ -10,12 +11,21 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Configuration
-@AllArgsConstructor
 public class ConsumerMetrics {
 
     private final MeterRegistry meterRegistry;
     private final Map<String, AtomicLong> lags = new ConcurrentHashMap<>();
     private final Map<String, AtomicLong> eventTimestamp = new ConcurrentHashMap<>();
+    @Getter private final Timer checkpointTimer;
+
+    public ConsumerMetrics(final MeterRegistry meterRegistry) {
+        this.meterRegistry = meterRegistry;
+        this.checkpointTimer = Timer
+                .builder("ehconsumer_checkpoint")
+                .publishPercentiles(0.75, 0.90, 0.95, 0.98, 0.99, 0.999)
+                .description("Time taken to checkpoint")
+                .register(this.meterRegistry);
+    }
 
     public void countEvents(final String partitionId) {
 
@@ -58,6 +68,15 @@ public class ConsumerMetrics {
         meterRegistry
                 .counter(
                         "ehconsumer_partition_close",
+                        Tags.of("partition_id", partitionId)
+                ).increment();
+    }
+
+    public void countUnknownErrorWhileProcessing(final String partitionId) {
+
+        meterRegistry
+                .counter(
+                        "eh_unknown_exception",
                         Tags.of("partition_id", partitionId)
                 ).increment();
     }
