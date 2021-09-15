@@ -2,43 +2,45 @@ package com.example.demo.service;
 
 import com.azure.messaging.eventhubs.CheckpointStore;
 import com.azure.messaging.eventhubs.EventProcessorClient;
+import com.azure.messaging.eventhubs.models.Checkpoint;
 import com.azure.messaging.eventhubs.models.PartitionOwnership;
 import com.example.demo.config.immutableconfig.ConsumerConfig;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
-@Service
+@Component
 public class EventProcessorClientHealthIndicator implements HealthIndicator {
 
     private final EventProcessorClient eventProcessorClient;
     private final CheckpointStore checkpointStore;
     private final ConsumerConfig consumerConfig;
-    private final Duration maxDuration;
+    private Map<String, Checkpoint> oldMappedCheckpoints;
 
     public EventProcessorClientHealthIndicator(final EventProcessorClient eventProcessorClient,
                                                final CheckpointStore checkpointStore,
-                                               final ConsumerConfig consumerConfig,
-                                               @Value("${eventhub-partition.max-duration-of-inactivity}") final Duration maxDuration) {
+                                               final ConsumerConfig consumerConfig) {
 
         this.eventProcessorClient = eventProcessorClient;
         this.checkpointStore = checkpointStore;
         this.consumerConfig = consumerConfig;
-        this.maxDuration = maxDuration;
-
+        oldMappedCheckpoints = new HashMap<>();
     }
 
-    private List<PartitionOwnership> listPartitionOwnerships() {
+    /**
+     * Returns all the partitions claimed by the current instance of the application.
+     * @return set containing all the partition ids that are claimed by current instance of the application.
+     */
+    private Set<String> getClaimedPartitions() {
 
-        final List<PartitionOwnership> partitionOwnerships = checkpointStore
+        final Set<String> claimedPartitions = checkpointStore
                 .listOwnership(
                         consumerConfig.getFullyQualifiedNamespace(),
                         consumerConfig.getEventHubName(),
@@ -47,21 +49,53 @@ public class EventProcessorClientHealthIndicator implements HealthIndicator {
                 .toStream()
                 .filter(partitionOwnership ->
                         partitionOwnership.getOwnerId().compareTo(eventProcessorClient.getIdentifier()) == 0)
-                .collect(Collectors.toList());
+                .map(PartitionOwnership::getPartitionId)
+                .collect(Collectors.toSet());
 
         if (log.isInfoEnabled()) {
             log.info("--- Partition Ownership information ---");
-            log.info("Size: {}", partitionOwnerships.size());
-            for (PartitionOwnership partitionOwnership: partitionOwnerships) {
-                log.info("Partition ID: {}, Owner ID: {}, Last Modified Time: {}",
-                        partitionOwnership.getPartitionId(),
-                        partitionOwnership.getOwnerId(),
-                        partitionOwnership.getLastModifiedTime()
+            log.info("Size: {}", claimedPartitions.size());
+            for (String partitionId: claimedPartitions) {
+                log.info("Partition ID: {}, Owner ID: {}",
+                        partitionId,
+                        eventProcessorClient.getIdentifier()
                 );
             };
             log.info("--- Partition Ownership information end ---");
         }
-        return partitionOwnerships;
+        return claimedPartitions;
+    }
+
+    /**
+     * Returns the checkpoint data for all the partitions that are claimed by the current instance of the application.
+     * @param claimedPartitions set containing all the partitions ids that are claimed.
+     * @return map that maps the checkpoint information for all the claimed partitions
+     */
+    private Map<String, Checkpoint> getCheckpointDataForClaimedPartitions(final Set<String> claimedPartitions) {
+
+        final Map<String, Checkpoint> checkpoints = checkpointStore
+                .listCheckpoints(
+                        consumerConfig.getFullyQualifiedNamespace(),
+                        consumerConfig.getEventHubName(),
+                        consumerConfig.getConsumerGroup()
+                )
+                .toStream()
+                .filter(checkpoint -> claimedPartitions.contains(checkpoint.getPartitionId()))
+                .collect(Collectors.toMap(Checkpoint::getPartitionId, checkpoint -> checkpoint));
+
+        if (log.isInfoEnabled()) {
+            log.info("--- Checkpoint information ---");
+            log.info("Size: {}", checkpoints.size());
+            for (Map.Entry<String, Checkpoint> entry: checkpoints.entrySet()) {
+                log.info("Partition ID: {}, Offset: {}, Sequence: {}",
+                        entry.getKey(),
+                        entry.getValue().getOffset(),
+                        entry.getValue().getSequenceNumber()
+                );
+            };
+            log.info("--- Checkpoint information end ---");
+        }
+        return checkpoints;
     }
 
     @Override
@@ -71,34 +105,29 @@ public class EventProcessorClientHealthIndicator implements HealthIndicator {
             return Health.down().withDetail("EventProcessorClient is not running", "").build();
         }
 
-        final Instant currentInstant = Instant.now();
-        final List<PartitionOwnership> partitionOwnerships = listPartitionOwnerships();
+        final Set<String> claimedPartitions = getClaimedPartitions();
+        final Map<String, Checkpoint> currentMappedCheckpoints = getCheckpointDataForClaimedPartitions(claimedPartitions);
 
-        for (PartitionOwnership partitionOwnership: partitionOwnerships) {
+        // If starting for the first time, this will be empty
+        if (oldMappedCheckpoints.size() == 0) {
+            return Health.up().build();
+        }
 
-            final Instant lastModifiedTime = Instant.ofEpochMilli(partitionOwnership.getLastModifiedTime());
-            if (Duration
-                    .between(currentInstant, lastModifiedTime)
-                    .compareTo(maxDuration) > 0) {
+        for (Map.Entry<String, Checkpoint> entry: currentMappedCheckpoints.entrySet()) {
 
-                log.error(
-                        "Last event processed in partition: {} was {} seconds ago. Marking health as down.",
-                        partitionOwnership.getPartitionId(),
-                        Duration.between(currentInstant, lastModifiedTime).getSeconds()
-                );
+            final String partitionId = entry.getKey();
+            if (oldMappedCheckpoints.containsKey(partitionId) &&
+                    oldMappedCheckpoints.get(partitionId).getSequenceNumber().longValue()
+                            == entry.getValue().getSequenceNumber().longValue()) {
 
+                log.error("Events not read from partition: {}. Marking health as down.", partitionId);
                 return Health
                         .down()
-                        .withDetail(
-                                String.format(
-                                        "Events not consumed on given partition since last %s seconds",
-                                        maxDuration.getSeconds()
-                                ),
-                                partitionOwnership.getPartitionId()
-                        )
+                        .withDetail("Not consuming events from partition", entry.getKey())
                         .build();
             }
         }
+        oldMappedCheckpoints = currentMappedCheckpoints;
         return Health.up().build();
     }
 }
