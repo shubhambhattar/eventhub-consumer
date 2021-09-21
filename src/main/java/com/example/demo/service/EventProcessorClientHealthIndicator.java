@@ -110,6 +110,7 @@ public class EventProcessorClientHealthIndicator implements HealthIndicator {
 
         // If starting for the first time, this will be empty
         if (oldMappedCheckpoints.size() == 0) {
+            oldMappedCheckpoints = currentMappedCheckpoints;
             return Health.up().build();
         }
 
