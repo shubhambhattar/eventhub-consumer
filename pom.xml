@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.5.3</version>
+		<version>3.0.0</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.example</groupId>
@@ -14,14 +14,24 @@
 	<name>demo</name>
 	<description>Demo project for Spring Boot</description>
 	<properties>
-		<java.version>11</java.version>
-		<azure-messaging-eventhubs.version>5.9.0</azure-messaging-eventhubs.version>
+		<java.version>17</java.version>
+		<azure-sdk-bom.version>1.2.8</azure-sdk-bom.version>
 	</properties>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.azure</groupId>
+				<artifactId>azure-sdk-bom</artifactId>
+				<version>${azure-sdk-bom.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 	<dependencies>
 		<dependency>
 			<groupId>com.azure</groupId>
 			<artifactId>azure-messaging-eventhubs</artifactId>
-			<version>${azure-messaging-eventhubs.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
