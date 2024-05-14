@@ -1,7 +1,7 @@
 version: "3.9"
 services:
   grafana:
-    image: grafana/grafana:8.0.6
+    image: grafana/grafana:10.4.2
     container_name: grafana
     ports:
       - "3000:3000"
@@ -15,7 +15,7 @@ services:
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Editor
 
   prometheus:
-    image: prom/prometheus:v2.28.1
+    image: prom/prometheus:v2.51.2
     container_name: prometheus
     ports:
       - "9090:9090"
@@ -23,7 +23,7 @@ services:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
 
   cadvisor:
-    image: gcr.io/cadvisor/cadvisor:v0.40.0
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
     container_name: cadvisor
     privileged: true
     command:
@@ -44,6 +44,6 @@ services:
       context: ./
     container_name: demo
     ports:
-    - "8080:8080"
-    - "9004:9004"
+      - "8080:8080"
+      - "9004:9004"
 

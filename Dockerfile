@@ -1,4 +1,4 @@
-FROM openjdk:11.0.11-jre-slim
+FROM openjdk:21.0.1_12-jre-jammy
 
 RUN [ "groupadd", "--system", "spring-boot" ]
 RUN [ "useradd", "--system", "--gid", "spring-boot", "spring-boot-user" ]
