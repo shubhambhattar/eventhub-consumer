@@ -9,7 +9,6 @@ import com.example.demo.impl.PartitionClose;
 import com.example.demo.impl.ProcessError;
 import com.example.demo.impl.ProcessEvent;
 import com.example.demo.impl.ProcessPartitionInitialization;
-import com.example.demo.metrics.ConsumerMetrics;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -32,11 +31,11 @@ public class EHConsumerConfig {
         log.info(consumerConfig.toString());
         log.info("---------------------------------------");
 
-        switch (consumerConfig.getInitialPartitionEventPosition()) {
+        switch (consumerConfig.initialPartitionEventPosition()) {
 
             case "earliest": {
 
-                for (int i = 0; i < consumerConfig.getNoOfPartitions(); i++) {
+                for (int i = 0; i < consumerConfig.noOfPartitions(); i++) {
                     initialPartitionEventPosition.put(String.valueOf(i), EventPosition.earliest());
                 }
                 break;
@@ -44,7 +43,7 @@ public class EHConsumerConfig {
 
             case "latest": {
 
-                for (int i = 0; i < consumerConfig.getNoOfPartitions(); i++) {
+                for (int i = 0; i < consumerConfig.noOfPartitions(); i++) {
                     initialPartitionEventPosition.put(String.valueOf(i), EventPosition.latest());
                 }
                 break;
@@ -52,9 +51,9 @@ public class EHConsumerConfig {
 
             default: {
 
-                Instant enqueuedTime = Instant.parse(consumerConfig.getInitialPartitionEventPosition());
+                Instant enqueuedTime = Instant.parse(consumerConfig.initialPartitionEventPosition());
 
-                for (int i = 0; i < consumerConfig.getNoOfPartitions(); i++) {
+                for (int i = 0; i < consumerConfig.noOfPartitions(); i++) {
                     initialPartitionEventPosition.put(String.valueOf(i), EventPosition.fromEnqueuedTime(enqueuedTime));
                 }
                 break;
@@ -78,9 +77,9 @@ public class EHConsumerConfig {
         log.info("---------------------------------------");
 
         return new EventProcessorClientBuilder()
-                .connectionString(consumerConfig.getConnectionString())
-                .consumerGroup(consumerConfig.getConsumerGroup())
-                .trackLastEnqueuedEventProperties(consumerConfig.isTrackLastEnqueuedEventProperties())
+                .connectionString(consumerConfig.connectionString())
+                .consumerGroup(consumerConfig.consumerGroup())
+                .trackLastEnqueuedEventProperties(consumerConfig.trackLastEnqueuedEventProperties())
                 .initialPartitionEventPosition(initialPartitionEventPosition)
                 .processPartitionInitialization(processPartitionInitialization)
                 .checkpointStore(checkpointStore)

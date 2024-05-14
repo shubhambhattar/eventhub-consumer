@@ -42,9 +42,9 @@ public class EventProcessorClientHealthIndicator implements HealthIndicator {
 
         final Set<String> claimedPartitions = checkpointStore
                 .listOwnership(
-                        consumerConfig.getFullyQualifiedNamespace(),
-                        consumerConfig.getEventHubName(),
-                        consumerConfig.getConsumerGroup()
+                        consumerConfig.fullyQualifiedNamespace(),
+                        consumerConfig.eventHubName(),
+                        consumerConfig.consumerGroup()
                 )
                 .toStream()
                 .filter(partitionOwnership ->
@@ -75,9 +75,9 @@ public class EventProcessorClientHealthIndicator implements HealthIndicator {
 
         final Map<String, Checkpoint> checkpoints = checkpointStore
                 .listCheckpoints(
-                        consumerConfig.getFullyQualifiedNamespace(),
-                        consumerConfig.getEventHubName(),
-                        consumerConfig.getConsumerGroup()
+                        consumerConfig.fullyQualifiedNamespace(),
+                        consumerConfig.eventHubName(),
+                        consumerConfig.consumerGroup()
                 )
                 .toStream()
                 .filter(checkpoint -> claimedPartitions.contains(checkpoint.getPartitionId()))

@@ -1,21 +1,25 @@
 package com.example.demo.config.immutableconfig;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.ToString;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@Getter
-@AllArgsConstructor
-@ToString(exclude = "connectionString")
 @ConfigurationProperties(prefix = "consumer")
-public class ConsumerConfig {
+public record ConsumerConfig(String connectionString,
+                             String consumerGroup,
+                             String initialPartitionEventPosition,
+                             int noOfPartitions,
+                             boolean trackLastEnqueuedEventProperties,
+                             String fullyQualifiedNamespace,
+                             String eventHubName) {
 
-    private final String connectionString;
-    private final String consumerGroup;
-    private final String initialPartitionEventPosition;
-    private final int noOfPartitions;
-    private final boolean trackLastEnqueuedEventProperties;
-    private final String fullyQualifiedNamespace;
-    private final String eventHubName;
+    @Override
+    public String toString() {
+        return "ConsumerConfig{" +
+                "consumerGroup='" + consumerGroup + '\'' +
+                ", initialPartitionEventPosition='" + initialPartitionEventPosition + '\'' +
+                ", noOfPartitions=" + noOfPartitions +
+                ", trackLastEnqueuedEventProperties=" + trackLastEnqueuedEventProperties +
+                ", fullyQualifiedNamespace='" + fullyQualifiedNamespace + '\'' +
+                ", eventHubName='" + eventHubName + '\'' +
+                '}';
+    }
 }
