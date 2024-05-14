@@ -38,6 +38,15 @@ services:
       - /var/lib/docker/:/var/lib/docker:ro
       - /dev/disk/:/dev/disk:ro
 
+  vector:
+    image: timberio/vector:0.37.1-debian
+    container_name: vector
+    ports:
+      - "8686:8686"
+      - "9598:9598"
+    volumes:
+      - ./vector/vector.yml:/etc/vector/vector.yml
+
   app:
     build:
       dockerfile: ./Dockerfile

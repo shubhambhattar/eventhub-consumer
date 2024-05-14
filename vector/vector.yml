@@ -1,0 +1,12 @@
+api:
+  enabled: true
+  address: 0.0.0.0:8686
+sources:
+  vector_internal_metrics:
+    type: internal_metrics
+sinks:
+  vector_prometheus_exporter:
+    type: prometheus_exporter
+    inputs:
+      - vector_internal_metrics
+    address: 0.0.0.0:9598
